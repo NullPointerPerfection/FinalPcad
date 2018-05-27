@@ -4,7 +4,10 @@ import java.rmi.RemoteException;
 import java.util.HashMap;
 
 public class PCADBroker implements Forum {
-	
+
+	private final int port = 1120;
+	private final int portC = 1230;
+
 	private static HashMap<String, String> BigMom; // topic, server
 	private HashMap<String, String> MyChildren; //topic, user
 	
