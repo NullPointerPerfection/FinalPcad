@@ -16,8 +16,8 @@ import java.util.Scanner;
 
 public class PCADBroker implements Forum {
 
-	private final static int portS = 2400;
-	private final static int portC = 3600;
+	private int portS;
+	private final static int portC = 2500;//3600
 	private String servername;
 	private Forum amicoserver; //    l'eventuale server a cui si iscrive
 
@@ -28,11 +28,12 @@ public class PCADBroker implements Forum {
 
 	//public static void main(String[] args) throws RemoteException, NotBoundException { new PCADBroker("Roba", "localhost"); }
 
-	public PCADBroker(String servername, HashMap<String, String> t) throws RemoteException, NotBoundException {
+	public PCADBroker(String servername, HashMap<String, String> t, int port) throws RemoteException, NotBoundException {
 		System.out.println("inizio costuttore server roba");
 		this.servername = servername;
 		Forum stub = (Forum) UnicastRemoteObject.exportObject(this, 0);
 		Registry r = null;
+        portS=port;
 		try {
 			r = LocateRegistry.createRegistry(portS);
 		} catch (RemoteException e) {
@@ -43,8 +44,8 @@ public class PCADBroker implements Forum {
 		System.out.println("si � creato il server");
 	}
 
-	public PCADBroker(String servername, List<String> t, String nomeamico, String hostamico, int portA) throws RemoteException, NotBoundException, UnknownHostException {
-		this(servername,t);
+	public PCADBroker(String servername, HashMap<String, String> t, int port, String nomeamico, String hostamico, int portA) throws RemoteException, NotBoundException, UnknownHostException {
+		this(servername,t, port);
 		Registry registry = LocateRegistry.getRegistry(hostamico, portA); //trova il registro
 		amicoserver = (Forum) registry.lookup(nomeamico);
 		ReqConnection(); //il server si iscrive ad un altro server
@@ -65,7 +66,6 @@ public class PCADBroker implements Forum {
 
 	@Override
 	public void SReqDisconnection(String user) throws RemoteException {
-
         if(!ListaClient.containsKey(user)) return;
         ListaClient.remove(user);
 
@@ -74,29 +74,39 @@ public class PCADBroker implements Forum {
         });
 	}
 
-	@Override //è da modificare... nel caso sia un topic di amicoserver il server deve iscriversi al posto del client
+	@Override
 	public Integer SRSTopic(String user, String topic) throws RemoteException {
 		if(ListaClient.containsKey(user)){ //se client iscritto
 			if(this.topic.containsKey(topic)) {//se esiste il topic
-                if (ListaTopic.get(topic).add(user)) //iscrivilo
+                if(this.topic.get(topic).equals(servername))//se è proprio
+			         if (ListaTopic.get(topic).add(user)) //iscrivilo
+                         return 0;
+                if(amicoserver.SRSTopic(servername, topic).equals(0)) {
+                    ListaTopic.get(topic).add(user);
                     return 0;
+                }
             }else{//se non c'è il topic crealo
-			   if( this.topic.put(topic, (qualcosa))){//iscrivi il client
+			        this.topic.put(topic, servername);//iscrivi il client
 			       List<String> l = new ArrayList<>();
 			       l.add(user);
 			       ListaTopic.put(topic, l);
                    return 0;
-               }
             }
 		}
 		return 1;
 	}
 
 	@Override
-	public Integer SRUSTopic(String topic) throws RemoteException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	public Integer SRUSTopic(String user, String topic) throws RemoteException {
+		    if(this.topic.get(topic).equals(servername)) {
+                ListaTopic.get(topic).remove(user);
+                return 0;
+            }else{
+		        amicoserver.SRUSTopic(servername, topic);
+                ListaTopic.get(topic).remove(user);
+                return 1;
+            }
+    }
 
 	@Override
 	public Integer SPublish(String msg, String topic) throws RemoteException {

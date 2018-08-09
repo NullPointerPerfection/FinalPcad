@@ -80,7 +80,7 @@ public class Pub_Sub implements Client {
 
 	@Override
 	public void RUSTopic(String topic) throws RemoteException {
-		int a = server.SRUSTopic(topic);
+		int a = server.SRUSTopic(username, topic);
 		if (a == 0) {
 			topiclist.remove(topic);
 			System.out.println("Disiscrizione di " + username + " al topic " + topic);

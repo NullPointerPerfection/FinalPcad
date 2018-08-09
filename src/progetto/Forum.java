@@ -9,7 +9,7 @@ public interface Forum extends Client {
 	public Integer SReqConnection(String user, String host) throws RemoteException, NotBoundException;
 	public void SReqDisconnection(String user) throws RemoteException;
 	public Integer SRSTopic(String user, String topic) throws RemoteException;
-	public Integer SRUSTopic(String topic) throws RemoteException;
+	public Integer SRUSTopic(String user, String topic) throws RemoteException;
 	public Integer SPublish(String msg, String topic) throws RemoteException;
 	public List<String> listaserveramico() throws RemoteException;
 
