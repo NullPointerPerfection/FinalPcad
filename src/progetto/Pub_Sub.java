@@ -67,7 +67,7 @@ public class Pub_Sub implements Client {
 
 	@Override
 	public void RSTopic(String topic) throws RemoteException {
-		int a = server.SRSTopic(topic);
+		int a = server.SRSTopic(username, topic);
 		if (a ==  0 && topiclist.put(topic,true)) {
 			System.out.println("Iscrizione di " + username + " al topic " + topic);
 			return;

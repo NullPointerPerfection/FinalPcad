@@ -21,14 +21,14 @@ public class PCADBroker implements Forum {
 	private String servername;
 	private Forum amicoserver; //    l'eventuale server a cui si iscrive
 
-	private List<String> topic = new ArrayList<>(); //lista topic(argomenti)
-	private HashMap<String, List<String>> ListaTopic = new HashMap<String, List<String>>(); //topic, lista utenti
-	private HashMap<String, Client> ListaClient = new HashMap<String, Client>(); //nomeUtente, oggetto
+    private HashMap<String, String> topic = new HashMap<String, String>(); // topic, server
+    private HashMap<String, List<String>> ListaTopic = new HashMap<String, List<String>>(); //topic, lista utenti
+    private HashMap<String, Client> ListaClient = new HashMap<String, Client>(); //nomeUtente, oggetto
 
 
 	//public static void main(String[] args) throws RemoteException, NotBoundException { new PCADBroker("Roba", "localhost"); }
 
-	public PCADBroker(String servername, List<String> t) throws RemoteException, NotBoundException {
+	public PCADBroker(String servername, HashMap<String, String> t) throws RemoteException, NotBoundException {
 		System.out.println("inizio costuttore server roba");
 		this.servername = servername;
 		Forum stub = (Forum) UnicastRemoteObject.exportObject(this, 0);
@@ -74,10 +74,22 @@ public class PCADBroker implements Forum {
         });
 	}
 
-	@Override
-	public Integer SRSTopic(String topic) throws RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+	@Override //è da modificare... nel caso sia un topic di amicoserver il server deve iscriversi al posto del client
+	public Integer SRSTopic(String user, String topic) throws RemoteException {
+		if(ListaClient.containsKey(user)){ //se client iscritto
+			if(this.topic.containsKey(topic)) {//se esiste il topic
+                if (ListaTopic.get(topic).add(user)) //iscrivilo
+                    return 0;
+            }else{//se non c'è il topic crealo
+			   if( this.topic.put(topic, (qualcosa))){//iscrivi il client
+			       List<String> l = new ArrayList<>();
+			       l.add(user);
+			       ListaTopic.put(topic, l);
+                   return 0;
+               }
+            }
+		}
+		return 1;
 	}
 
 	@Override
@@ -92,10 +104,26 @@ public class PCADBroker implements Forum {
 		return null;
 	}
 
-	@Override
+    @Override
+    public List<String> listaserveramico() throws RemoteException {
+        return null;
+    }
+
+    @Override
 	public void ReqConnection() throws RemoteException, UnknownHostException, NotBoundException {
 		//fare controllo se esiste serveramico
+        if(amicoserver == null)
+            return;
+        if(amicoserver.SReqConnection(servername, InetAddress.getLocalHost().getHostAddress()) == 0)
+            System.out.println("il server si è registrato su un altro server");
+        else
+            System.out.println("non si è riuscito ad registrare");
+
 	}
+
+	private void updatelist() throws RemoteException {
+	    amicoserver.listaserveramico();
+    }
 
     @Override
     public void ReqDisconnection() throws RemoteException {
