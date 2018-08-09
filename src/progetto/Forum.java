@@ -11,10 +11,9 @@ public interface Forum extends Client {
 	public Integer SRUSTopic(String topic) throws RemoteException;
 	public Integer SPublish(String msg, String topic) throws RemoteException;
 
-	
-	public void addToServerList(String servername, Forum stub) throws RemoteException;
-	public boolean isOnline(String username) throws RemoteException;
-	public void goOnline(String username, Client client) throws RemoteException;
+	//public void addToServerList(String servername, Forum stub) throws RemoteException;
+	//public boolean isOnline(String username) throws RemoteException;
+	//public void goOnline(String username, Client client) throws RemoteException;
 	/*richiesta connessione di un client
 	richiesta disconnessione di un client
 	richiesta subscribe di un client su una topic

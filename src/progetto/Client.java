@@ -8,8 +8,8 @@ import java.rmi.RemoteException;
 
 public interface Client extends Remote {
 	
-	public void ReqConnection(String user, String host) throws RemoteException, UnknownHostException, NotBoundException;
-	public void ReqDisconnection(String user) throws RemoteException;
+	public void ReqConnection() throws RemoteException, UnknownHostException, NotBoundException;
+	public void ReqDisconnection() throws RemoteException;
 	public void RSTopic(String topic) throws RemoteException;
 	public void RUSTopic(String topic) throws RemoteException;
 	public void Publish(String msg, String topic) throws RemoteException;
