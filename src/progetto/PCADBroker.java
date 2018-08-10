@@ -16,7 +16,7 @@ import java.util.Scanner;
 
 public class PCADBroker implements Forum {
 
-	private int portS;
+	private int portS;//le porte sono così per i test (bisognerà fare in modo di passare la porta richiesta quando serve)
 	private final static int portC = 2500;//3600
 	private String servername;
 	private Forum amicoserver; //    l'eventuale server a cui si iscrive
@@ -110,7 +110,16 @@ public class PCADBroker implements Forum {
 
 	@Override
 	public Integer SPublish(String msg, String topic) throws RemoteException {
-		// TODO Auto-generated method stub
+		if(this.topic.get(topic).equals(servername)) //caso in cui è un mio topic
+		{
+			List<String> ls = ListaTopic.get(topic); //lista utenti iscritti
+			for(int i=0; i<ls.size(); i++) {
+				if (ListaClient.get(ls.get(i)).listen_topic(topic))//se è in ascolto
+					ListaClient.get(ls.get(i)).clientPrint(msg, topic);
+			}
+			return 0;
+		}//se è in un altro server
+		amicoserver.Publish(msg, topic);// in teoria se lho pensata bene il serveramico userà la clientprint(del nostro server) per inviare la notifica... a quel punto nella nostra clientprint faremo in modo di chiamarla su tutti i nostri client iscritti
 		return null;
 	}
 
@@ -157,9 +166,14 @@ public class PCADBroker implements Forum {
 	}
 
 	@Override
-	public void clientPrint(String msg) throws RemoteException  {
+	public void clientPrint(String msg, String topic) throws RemoteException  {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public boolean listen_topic(String topic) throws RemoteException {
+		return false;
 	}
 /*
 	@Override

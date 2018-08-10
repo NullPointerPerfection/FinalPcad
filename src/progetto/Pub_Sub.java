@@ -103,8 +103,13 @@ public class Pub_Sub implements Client {
 		System.err.println("--UNEXPECTED ERROR IN PUBLISH--");
 	}
 
-	public void clientPrint(String msg) throws RemoteException {
-		System.out.println(msg);
+	public void clientPrint(String msg, String topic) throws RemoteException {
+		System.out.println(topic+ ": " +msg);
 	}
-	
+
+	@Override
+	public boolean listen_topic(String topic) throws RemoteException {
+		return topiclist.get(topic);
+	}
+
 }
