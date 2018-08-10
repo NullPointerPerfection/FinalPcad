@@ -112,4 +112,8 @@ public class Pub_Sub implements Client {
 		return topiclist.get(topic);
 	}
 
+	public void modify_listen(String topic, boolean t){
+		if(topiclist.containsKey(topic))
+			topiclist.replace(topic, t);
+	}
 }

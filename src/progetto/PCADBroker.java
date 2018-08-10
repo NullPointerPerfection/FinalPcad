@@ -76,6 +76,7 @@ public class PCADBroker implements Forum {
 
 	@Override
 	public Integer SRSTopic(String user, String topic) throws RemoteException {
+		if(amicoserver != null) updatelist();
 		if(ListaClient.containsKey(user)){ //se client iscritto
 			if(this.topic.containsKey(topic)) {//se esiste il topic
                 if(this.topic.get(topic).equals(servername))//se è proprio
@@ -124,8 +125,13 @@ public class PCADBroker implements Forum {
 	}
 
     @Override
-    public List<String> listaserveramico() throws RemoteException {
-        return null;
+    public HashMap<String, String> listaserveramico() throws RemoteException {
+        HashMap<String,String> s = new HashMap<String,String>();
+
+		topic.forEach((k, v) -> {
+			if(v.equals(servername)) s.put(k,v);
+		});
+		return s;
     }
 
     @Override
@@ -137,12 +143,18 @@ public class PCADBroker implements Forum {
             System.out.println("il server si è registrato su un altro server");
         else
             System.out.println("non si è riuscito ad registrare");
-
+		updatelist();
 	}
 
 	private void updatelist() throws RemoteException {
-	    amicoserver.listaserveramico();
-    }
+		HashMap<String, String> l = amicoserver.listaserveramico();
+		l.forEach((k, v) -> {
+			if(!topic.containsKey(k)){
+				topic.put(k,v);
+				ListaTopic.put(k, new ArrayList<String>());
+			}
+		});
+	}
 
     @Override
     public void ReqDisconnection() throws RemoteException {
@@ -153,8 +165,8 @@ public class PCADBroker implements Forum {
 	public void RSTopic(String topic) throws RemoteException {
 		// TODO Auto-generated method stub
 
-	}
-
+	}//RICONTROLLARE SRSTOPIC DOPO AVER LETTO IL COMMENTO SOTTOSTANTE
+//il client usa il metodo rstopic per volersi iscrivere, quindi usa il metodo del server srstopic per poterlo fare. se il server non è in grado di iscriverlo chiamerà a sua volta il suo metodo rstopic per iscriversi a quello del serveramico che userà il metodo srtsopic per farlo
 	@Override
 	public void RUSTopic(String topic) throws RemoteException {
 

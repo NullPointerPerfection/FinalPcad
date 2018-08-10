@@ -2,6 +2,7 @@ package progetto;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.HashMap;
 import java.util.List;
 
 public interface Forum extends Client {
@@ -11,7 +12,7 @@ public interface Forum extends Client {
 	public Integer SRSTopic(String user, String topic) throws RemoteException;
 	public Integer SRUSTopic(String user, String topic) throws RemoteException;
 	public Integer SPublish(String msg, String topic) throws RemoteException;
-	public List<String> listaserveramico() throws RemoteException;
+	public HashMap<String,String> listaserveramico() throws RemoteException;
 
 	//public void addToServerList(String servername, Forum stub) throws RemoteException;
 	//public boolean isOnline(String username) throws RemoteException;
