@@ -175,7 +175,7 @@ public class PCADBroker implements Forum {
 			}
 		});
 	}
-
+//ciao
 	@Override
 	public void RSTopic(String topic) throws RemoteException {
 		// TODO Auto-generated method stub
