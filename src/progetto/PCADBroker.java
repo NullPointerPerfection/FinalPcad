@@ -158,6 +158,14 @@ public class PCADBroker implements Forum {
 
     @Override
     public void ReqDisconnection() throws RemoteException {
+		amicoserver.SReqDisconnection(servername);
+		amicoserver=null;
+
+		topic.forEach((k, v) -> {
+			if(!v.equals(servername)) topic.remove(k);
+		});
+
+
 
     }
 
