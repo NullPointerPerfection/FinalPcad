@@ -164,7 +164,7 @@ public class PCADBroker implements Forum {
 			if (!v.equals(servername)) {
 				topic.remove(k);
 				List<String> s = ListaTopic.get(k);
-				for (int i = 0; i < s.size(); i++) {
+				for(int i = 0; i < s.size(); i++) {
 					try {
 						ListaClient.get(s.get(i)).RUSTopic(k);
 					} catch (RemoteException e) {
@@ -197,12 +197,12 @@ public class PCADBroker implements Forum {
 	public void clientPrint(String msg, String topic) throws RemoteException  {
 		List<String> s = ListaTopic.get(topic);
 		for(int i=0; i<s.size();i++)
-			ListaClient.get(s.get(i)).clientPrint(msg,topic);
-
+			if(ListaClient.get(s.get(i)).listen_topic(topic))
+				ListaClient.get(s.get(i)).clientPrint(msg,topic);
 	}
 
 	@Override
 	public boolean listen_topic(String topic) throws RemoteException {
-		return false;
+		return true;
 	}
 }
