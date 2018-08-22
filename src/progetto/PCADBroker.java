@@ -83,6 +83,7 @@ public class PCADBroker implements Forum {
 			         if (ListaTopic.get(topic).add(user)) //iscrivilo
                          return 0;
                 this.RSTopic(topic);//il server si iscrive al topic dell serveramico
+				ListaTopic.get(topic).add(user);
                 return 0;
             }else{//se non c'è il topic crealo
 			        this.topic.put(topic, servername);//iscrivi il client
@@ -101,7 +102,7 @@ public class PCADBroker implements Forum {
                 ListaTopic.get(topic).remove(user);
                 return 0;
             }else{
-		        amicoserver.SRUSTopic(servername, topic);
+		        this.RUSTopic(topic);
                 ListaTopic.get(topic).remove(user);
                 return 1;
             }
@@ -118,7 +119,7 @@ public class PCADBroker implements Forum {
 			}
 			return 0;
 		}//se è in un altro server
-		amicoserver.Publish(msg, topic);// in teoria se lho pensata bene il serveramico userà la clientprint(del nostro server) per inviare la notifica... a quel punto nella nostra clientprint faremo in modo di chiamarla su tutti i nostri client iscritti
+		this.Publish(msg,topic);
 		return null;
 	}
 
@@ -178,22 +179,25 @@ public class PCADBroker implements Forum {
 	public void RSTopic(String topic) throws RemoteException {
 		if(amicoserver.SRSTopic(servername, topic).equals(0))
 			System.out.println("il server " + servername + " si è iscritto al topic " + topic);
+	}
 
-	}//RICONTROLLARE SRSTOPIC DOPO AVER LETTO IL COMMENTO SOTTOSTANTE
-//il client usa il metodo rstopic per volersi iscrivere, quindi usa il metodo del server srstopic per poterlo fare. se il server non è in grado di iscriverlo chiamerà a sua volta il suo metodo rstopic per iscriversi a quello del serveramico che userà il metodo srtsopic per farlo
 	@Override
 	public void RUSTopic(String topic) throws RemoteException {
-
+		amicoserver.SRUSTopic(servername, topic);
 	}
 
 	@Override
 	public void Publish(String msg, String topic) throws RemoteException {
-
+		amicoserver.Publish(msg, topic);
+		// in teoria se lho pensata bene il serveramico userà la clientprint(del nostro server) per inviare la notifica...
+		// a quel punto nella nostra clientprint faremo in modo di chiamarla su tutti i nostri client iscritti
 	}
 
 	@Override
 	public void clientPrint(String msg, String topic) throws RemoteException  {
-		// TODO Auto-generated method stub
+		List<String> s = ListaTopic.get(topic);
+		for(int i=0; i<s.size();i++)
+			ListaClient.get(s.get(i)).clientPrint(msg,topic);
 
 	}
 
