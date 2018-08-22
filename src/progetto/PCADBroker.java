@@ -162,14 +162,19 @@ public class PCADBroker implements Forum {
 		amicoserver=null;
 
 		topic.forEach((k, v) -> {
-			if(!v.equals(servername)){
-			    topic.remove(k);
-			    ListaTopic.
+			if (!v.equals(servername)) {
+				topic.remove(k);
+				List<String> s = ListaTopic.get(k);
+				for (int i = 0; i < s.size(); i++) {
+					try {
+						ListaClient.get(s.get(i)).RUSTopic(k);
+					} catch (RemoteException e) {
+						e.printStackTrace();
+					}
+				}
+			}
 		});
-
-
-
-    }
+	}
 
 	@Override
 	public void RSTopic(String topic) throws RemoteException {
