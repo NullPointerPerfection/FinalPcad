@@ -82,10 +82,8 @@ public class PCADBroker implements Forum {
                 if(this.topic.get(topic).equals(servername))//se è proprio
 			         if (ListaTopic.get(topic).add(user)) //iscrivilo
                          return 0;
-                if(amicoserver.SRSTopic(servername, topic).equals(0)) {
-                    ListaTopic.get(topic).add(user);
-                    return 0;
-                }
+                this.RSTopic(topic);//il server si iscrive al topic dell serveramico
+                return 0;
             }else{//se non c'è il topic crealo
 			        this.topic.put(topic, servername);//iscrivi il client
 			       List<String> l = new ArrayList<>();
@@ -175,10 +173,11 @@ public class PCADBroker implements Forum {
 			}
 		});
 	}
-//ciao
+
 	@Override
 	public void RSTopic(String topic) throws RemoteException {
-		// TODO Auto-generated method stub
+		if(amicoserver.SRSTopic(servername, topic).equals(0))
+			System.out.println("il server " + servername + " si è iscritto al topic " + topic);
 
 	}//RICONTROLLARE SRSTOPIC DOPO AVER LETTO IL COMMENTO SOTTOSTANTE
 //il client usa il metodo rstopic per volersi iscrivere, quindi usa il metodo del server srstopic per poterlo fare. se il server non è in grado di iscriverlo chiamerà a sua volta il suo metodo rstopic per iscriversi a quello del serveramico che userà il metodo srtsopic per farlo
@@ -202,15 +201,4 @@ public class PCADBroker implements Forum {
 	public boolean listen_topic(String topic) throws RemoteException {
 		return false;
 	}
-/*
-	@Override
-	public boolean isOnline(String username) throws RemoteException {
-		return UtentiOnline.containsKey(username);
-	}
-
-	@Override
-	public void goOnline(String username, Client client) throws RemoteException {
-		UtentiOnline.put(username, client);
-	}
-*/
 }
