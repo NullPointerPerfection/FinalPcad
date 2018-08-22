@@ -162,7 +162,9 @@ public class PCADBroker implements Forum {
 		amicoserver=null;
 
 		topic.forEach((k, v) -> {
-			if(!v.equals(servername)) topic.remove(k);
+			if(!v.equals(servername)){
+			    topic.remove(k);
+			    ListaTopic.
 		});
 
 
