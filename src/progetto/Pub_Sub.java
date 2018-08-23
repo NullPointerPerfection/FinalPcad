@@ -12,15 +12,16 @@ import java.util.*;
 public class Pub_Sub implements Client {
 	
 	//private final static int portR = 1200;
-	private final static int portS = 2400;
-	private final static int portC = 3600;
+	//private final static int portS = 2400;
+	private int portC;
 	private Forum server;
 	private String username;
 	private HashMap<String,Boolean> topiclist = new HashMap<String, Boolean>();
 
-	public Pub_Sub(String user, String hostS, String nameS) throws RemoteException, NotBoundException {
+	public Pub_Sub(String user, String hostS, String nameS, int portC, int portS) throws RemoteException, NotBoundException {
 		this.username = user;
 		Client stub = (Client) UnicastRemoteObject.exportObject(this, 0);
+		this.portC=portC;
 		Registry r = null;
 		try {
 			r = LocateRegistry.createRegistry(portC);
@@ -40,7 +41,7 @@ public class Pub_Sub implements Client {
 		int response = 1;
 		try {
 			while (response == 1) {
-				response = server.SReqConnection(username, InetAddress.getLocalHost().getHostAddress());
+				response = server.SReqConnection(username, InetAddress.getLocalHost().getHostAddress(), portC);
 				switch (response) {
 					case (0):
 						System.out.println("Connection between " + username + " and " + server + ": DONE.");

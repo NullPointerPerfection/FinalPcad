@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface Forum extends Client {
 	
-	public Integer SReqConnection(String user, String host) throws RemoteException, NotBoundException;
+	public Integer SReqConnection(String user, String host, int portC) throws RemoteException, NotBoundException;
 	public void SReqDisconnection(String user) throws RemoteException;
 	public Integer SRSTopic(String user, String topic) throws RemoteException;
 	public Integer SRUSTopic(String user, String topic) throws RemoteException;

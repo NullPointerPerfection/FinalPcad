@@ -17,7 +17,7 @@ import java.util.Scanner;
 public class PCADBroker implements Forum {
 
 	private int portS;//le porte sono così per i test (bisognerà fare in modo di passare la porta richiesta quando serve)
-	private final static int portC = 2500;//3600
+	//private final static int portC = 2500;//3600
 	private String servername;
 	private Forum amicoserver; //    l'eventuale server a cui si iscrive
 
@@ -53,7 +53,7 @@ public class PCADBroker implements Forum {
 
 
 	@Override
-	public Integer SReqConnection(String user, String host) throws RemoteException, NotBoundException {
+	public Integer SReqConnection(String user, String host, int portC) throws RemoteException, NotBoundException {
         Registry registry = LocateRegistry.getRegistry(host, portC); //trova il registro
         Client stub = (Client) registry.lookup(user);
 
@@ -138,7 +138,7 @@ public class PCADBroker implements Forum {
 		//fare controllo se esiste serveramico
         if(amicoserver == null)
             return;
-        if(amicoserver.SReqConnection(servername, InetAddress.getLocalHost().getHostAddress()) == 0)
+        if(amicoserver.SReqConnection(servername, InetAddress.getLocalHost().getHostAddress(), portS) == 0)
             System.out.println("il server si è registrato su un altro server");
         else
             System.out.println("non si è riuscito ad registrare");
