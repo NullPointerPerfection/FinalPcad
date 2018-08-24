@@ -17,7 +17,6 @@ import java.util.Scanner;
 public class PCADBroker implements Forum {
 
 	private int portS;//le porte sono così per i test (bisognerà fare in modo di passare la porta richiesta quando serve)
-	//private final static int portC = 2500;//3600
 	private String servername;
 	private Forum amicoserver; //    l'eventuale server a cui si iscrive
 
@@ -25,8 +24,6 @@ public class PCADBroker implements Forum {
     private HashMap<String, List<String>> ListaTopic = new HashMap<String, List<String>>(); //topic, lista utenti
     private HashMap<String, Client> ListaClient = new HashMap<String, Client>(); //nomeUtente, oggetto
 
-
-	//public static void main(String[] args) throws RemoteException, NotBoundException { new PCADBroker("Roba", "localhost"); }
 
 	public PCADBroker(String servername, HashMap<String, String> t, int port) throws RemoteException, NotBoundException {
 		System.out.println("inizio costuttore server roba");
@@ -57,14 +54,14 @@ public class PCADBroker implements Forum {
         Registry registry = LocateRegistry.getRegistry(host, portC); //trova il registro
         Client stub = (Client) registry.lookup(user);
 
-        if(ListaClient.containsKey(user)) return 1;
-        else{
-            ListaClient.put(user, stub);
-            return 0;
-        }
+        synchronized (this) {
+			if (ListaClient.containsKey(user)) return 1;
+			ListaClient.put(user, stub);
+		}
+        return 0;
 	}
 
-	@Override
+	@Override//non dovrebbe servire il blocco perchè dalla connessione prevedo già che se c'è un user quello sarà univoco (se non è presente nella lista ok, ma se è presente sicuramente saranno diversi)
 	public void SReqDisconnection(String user) throws RemoteException {
         if(!ListaClient.containsKey(user)) return;
         ListaClient.remove(user);
@@ -79,14 +76,17 @@ public class PCADBroker implements Forum {
 		if(amicoserver != null) updatelist();
 		if(ListaClient.containsKey(user)){ //se client iscritto
 			if(this.topic.containsKey(topic)) {//se esiste il topic
-                if(this.topic.get(topic).equals(servername))//se è proprio
-			         if (ListaTopic.get(topic).add(user)) //iscrivilo
-                         return 0;
+                if(this.topic.get(topic).equals(servername)) {//se è proprio
+                	synchronized (this) {
+						ListaTopic.get(topic).add(user); //iscrivilo
+						return 0;
+					}
+				} //quest'ultimo pezzo è ancora da decidere come gestire la concorrenza (secondo me mettere l'intero metodo syn non è performante)
                 this.RSTopic(topic);//il server si iscrive al topic dell serveramico
 				ListaTopic.get(topic).add(user);
                 return 0;
             }else{//se non c'è il topic crealo
-			        this.topic.put(topic, servername);//iscrivi il client
+					this.topic.put(topic, servername);//iscrivi il client
 			       List<String> l = new ArrayList<>();
 			       l.add(user);
 			       ListaTopic.put(topic, l);
@@ -145,7 +145,7 @@ public class PCADBroker implements Forum {
 		updatelist();
 	}
 
-	private void updatelist() throws RemoteException {
+	private synchronized void updatelist() throws RemoteException {
 		HashMap<String, String> l = amicoserver.listaserveramico();
 		l.forEach((k, v) -> {
 			if(!topic.containsKey(k)){
