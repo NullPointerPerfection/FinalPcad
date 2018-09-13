@@ -101,6 +101,10 @@ public class Pub_Sub implements Client {
 			System.err.println(username + ", non puoi pubblicare sul topic " + topic + "non essendo iscritto.");
 			return;
 		}
+		else if ( a == 2) {
+            System.err.println("Disiscrizione di " + username + " al topic " + topic + "non riuscita: non esiste.");
+            return;
+        }
 		System.err.println("--UNEXPECTED ERROR IN PUBLISH--");
 	}
 

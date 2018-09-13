@@ -29,7 +29,7 @@ public class PCADBroker implements Forum {
 		System.out.println("inizio costuttore server roba");
 		this.servername = servername;
 		Forum stub = (Forum) UnicastRemoteObject.exportObject(this, 0);
-		Registry r = null;
+		Registry r;
         portS=port;
 		try {
 			r = LocateRegistry.createRegistry(portS);
@@ -42,7 +42,7 @@ public class PCADBroker implements Forum {
 	}
 
 	public PCADBroker(String servername, HashMap<String, String> t, int port, String nomeamico, String hostamico, int portA) throws RemoteException, NotBoundException, UnknownHostException {
-		this(servername,t, port);
+		this(servername, t, port);
 		Registry registry = LocateRegistry.getRegistry(hostamico, portA); //trova il registro
 		amicoserver = (Forum) registry.lookup(nomeamico);
 		ReqConnection(); //il server si iscrive ad un altro server
@@ -54,58 +54,59 @@ public class PCADBroker implements Forum {
         Registry registry = LocateRegistry.getRegistry(host, portC); //trova il registro
         Client stub = (Client) registry.lookup(user);
 
-        synchronized (this) {
 			if (ListaClient.containsKey(user)) return 1;
 			ListaClient.put(user, stub);
-		}
         return 0;
 	}
 
 	@Override//non dovrebbe servire il blocco perchè dalla connessione prevedo già che se c'è un user quello sarà univoco (se non è presente nella lista ok, ma se è presente sicuramente saranno diversi)
 	public void SReqDisconnection(String user) throws RemoteException {
         if(!ListaClient.containsKey(user)) return;
-        ListaClient.remove(user);
 
         ListaTopic.forEach((k, v) -> {
             if(v.contains(user)) v.remove(user);
         });
+
+		ListaClient.remove(user);
 	}
 
 	@Override
 	public Integer SRSTopic(String user, String topic) throws RemoteException {
 		if(amicoserver != null) updatelist();
 		if(ListaClient.containsKey(user)){ //se client iscritto
-			if(this.topic.containsKey(topic)) {//se esiste il topic
-                if(this.topic.get(topic).equals(servername)) {//se è proprio
-                	synchronized (this) {
-						ListaTopic.get(topic).add(user); //iscrivilo
-						return 0;
-					}
-				} //quest'ultimo pezzo è ancora da decidere come gestire la concorrenza (secondo me mettere l'intero metodo syn non è performante)
-                this.RSTopic(topic);//il server si iscrive al topic dell serveramico
-				ListaTopic.get(topic).add(user);
-                return 0;
-            }else{//se non c'è il topic crealo
+			synchronized (this) {
+				if (this.topic.containsKey(topic)) {//se esiste il topic
+					if (this.topic.get(topic).equals(servername)) {//se è proprio
+							ListaTopic.get(topic).add(user); //iscrivilo
+							return 0;
+					} //quest'ultimo pezzo è ancora da decidere come gestire la concorrenza (secondo me mettere l'intero metodo syn non è performante)
+					this.RSTopic(topic);//il server si iscrive al topic dell serveramico
+					ListaTopic.get(topic).add(user);
+					return 0;
+				} else {//se non c'è il topic crealo
 					this.topic.put(topic, servername);//iscrivi il client
-			       List<String> l = new ArrayList<>();
-			       l.add(user);
-			       ListaTopic.put(topic, l);
-                   return 0;
-            }
+					List<String> l = new ArrayList<>();
+					l.add(user);
+					ListaTopic.put(topic, l);
+					return 0;
+				}
+			}
 		}
 		return 1;
 	}
 
-	@Override
+	@Override //errore
 	public Integer SRUSTopic(String user, String topic) throws RemoteException {
-		    if(this.topic.get(topic).equals(servername)) {
-                ListaTopic.get(topic).remove(user);
-                return 0;
-            }else{
-		        this.RUSTopic(topic);
-                ListaTopic.get(topic).remove(user);
-                return 1;
-            }
+		if (this.topic.containsKey(topic)){
+			if (this.topic.get(topic).equals(servername)) {
+				ListaTopic.get(topic).remove(user);
+			} else {
+				this.RUSTopic(topic);
+				ListaTopic.get(topic).remove(user);
+			}
+		return 0;
+	}
+	return 1;
     }
 
 	@Override
