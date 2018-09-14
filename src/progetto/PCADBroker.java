@@ -19,13 +19,19 @@ public class PCADBroker implements Forum {
 	private int portS;//le porte sono così per i test (bisognerà fare in modo di passare la porta richiesta quando serve)
 	private String servername;
 	private Forum amicoserver; //    l'eventuale server a cui si iscrive
+	//private String amiconame;
 
-    private HashMap<String, String> topic = new HashMap<String, String>(); // topic, server
+	private List<String> mytopic;
+	private List<String> ereditati;
+
+    //private HashMap<String, String> topic = new HashMap<String, String>(); // topic, server
+
+	private List<String> utentionline = new ArrayList<>();
     private HashMap<String, List<String>> ListaTopic = new HashMap<String, List<String>>(); //topic, lista utenti
     private HashMap<String, Client> ListaClient = new HashMap<String, Client>(); //nomeUtente, oggetto
 
 
-	public PCADBroker(String servername, HashMap<String, String> t, int port) throws RemoteException, NotBoundException {
+	public PCADBroker(String servername, List<String> t, int port) throws RemoteException, NotBoundException {
 		System.out.println("inizio costuttore server roba");
 		this.servername = servername;
 		Forum stub = (Forum) UnicastRemoteObject.exportObject(this, 0);
@@ -37,14 +43,15 @@ public class PCADBroker implements Forum {
 			r = LocateRegistry.getRegistry(portS);
 		}
 		r.rebind(this.servername, stub);
-		topic=t;
+		mytopic=t;
 		System.out.println("si � creato il server");
 	}
 
-	public PCADBroker(String servername, HashMap<String, String> t, int port, String nomeamico, String hostamico, int portA) throws RemoteException, NotBoundException, UnknownHostException {
+	public PCADBroker(String servername, List<String> t, int port, String nomeamico, String hostamico, int portA) throws RemoteException, NotBoundException, UnknownHostException {
 		this(servername, t, port);
 		Registry registry = LocateRegistry.getRegistry(hostamico, portA); //trova il registro
 		amicoserver = (Forum) registry.lookup(nomeamico);
+		updatelist();
 		ReqConnection(); //il server si iscrive ad un altro server
 	}
 
@@ -53,21 +60,18 @@ public class PCADBroker implements Forum {
 	public Integer SReqConnection(String user, String host, int portC) throws RemoteException, NotBoundException {
         Registry registry = LocateRegistry.getRegistry(host, portC); //trova il registro
         Client stub = (Client) registry.lookup(user);
-
-			if (ListaClient.containsKey(user)) return 1;
-			ListaClient.put(user, stub);
+			synchronized (this) {
+				if (ListaClient.containsKey(user)) return 1;
+				ListaClient.put(user, stub);
+				utentionline.add(user);
+			}
         return 0;
 	}
 
 	@Override//non dovrebbe servire il blocco perchè dalla connessione prevedo già che se c'è un user quello sarà univoco (se non è presente nella lista ok, ma se è presente sicuramente saranno diversi)
 	public void SReqDisconnection(String user) throws RemoteException {
         if(!ListaClient.containsKey(user)) return;
-
-        ListaTopic.forEach((k, v) -> {
-            if(v.contains(user)) v.remove(user);
-        });
-
-		ListaClient.remove(user);
+        utentionline.remove(user);
 	}
 
 	@Override
@@ -75,34 +79,30 @@ public class PCADBroker implements Forum {
 		if(amicoserver != null) updatelist();
 		if(ListaClient.containsKey(user)){ //se client iscritto
 			synchronized (this) {
-				if (this.topic.containsKey(topic)) {//se esiste il topic
-					if (this.topic.get(topic).equals(servername)) {//se è proprio
-							ListaTopic.get(topic).add(user); //iscrivilo
-							return 0;
-					} //quest'ultimo pezzo è ancora da decidere come gestire la concorrenza (secondo me mettere l'intero metodo syn non è performante)
-					this.RSTopic(topic);//il server si iscrive al topic dell serveramico
+				if (mytopic.contains(topic)) {//se è proprio
+					ListaTopic.get(topic).add(user); //iscrivilo
+					return 0;
+				} else if(ereditati.contains(topic)){ //quest'ultimo pezzo è ancora da decidere come gestire la concorrenza (secondo me mettere l'intero metodo syn non è performante)
+					RSTopic(topic);//il server si iscrive al topic dell serveramico
 					ListaTopic.get(topic).add(user);
 					return 0;
-				} else {//se non c'è il topic crealo
-					this.topic.put(topic, servername);//iscrivi il client
-					List<String> l = new ArrayList<>();
-					l.add(user);
-					ListaTopic.put(topic, l);
-					return 0;
-				}
+				} //se non c'è il topic crealo
+				mytopic.add(topic);//iscrivi il client
+				List<String> l = new ArrayList<>();
+				l.add(user);
+				ListaTopic.put(topic, l);
+				return 0;
 			}
 		}
 		return 1;
 	}
 
-	@Override //errore
+	@Override
 	public Integer SRUSTopic(String user, String topic) throws RemoteException {
-		if (this.topic.containsKey(topic)){
-			if (this.topic.get(topic).equals(servername)) {
-				ListaTopic.get(topic).remove(user);
-			} else {
-				this.RUSTopic(topic);
-				ListaTopic.get(topic).remove(user);
+		if (ListaTopic.containsKey(topic)){
+			ListaTopic.get(topic).remove(user);
+			if(ereditati.contains(topic) && ListaTopic.get(topic).isEmpty()){
+				RUSTopic(topic);
 			}
 		return 0;
 	}
@@ -111,28 +111,16 @@ public class PCADBroker implements Forum {
 
 	@Override
 	public Integer SPublish(String msg, String topic) throws RemoteException {
-		if(this.topic.get(topic).equals(servername)) //caso in cui è un mio topic
-		{
+		if(mytopic.contains(topic)) {
 			List<String> ls = ListaTopic.get(topic); //lista utenti iscritti
-			for(int i=0; i<ls.size(); i++) {
-				if (ListaClient.get(ls.get(i)).listen_topic(topic))//se è in ascolto
-					ListaClient.get(ls.get(i)).clientPrint(msg, topic);
-			}
+			for(int i=0; i<ls.size(); i++) ListaClient.get(ls.get(i)).clientPrint(msg, topic);
 			return 0;
-		}//se è in un altro server
-		this.Publish(msg,topic);
-		return null;
+		}else if(ereditati.contains(topic)) {
+			Publish(msg, topic);
+			return 0;
+		} return 1;
 	}
 
-    @Override
-    public HashMap<String, String> listaserveramico() throws RemoteException {
-        HashMap<String,String> s = new HashMap<String,String>();
-
-		topic.forEach((k, v) -> {
-			if(v.equals(servername)) s.put(k,v);
-		});
-		return s;
-    }
 
     @Override
 	public void ReqConnection() throws RemoteException, UnknownHostException, NotBoundException {
@@ -146,34 +134,21 @@ public class PCADBroker implements Forum {
 		updatelist();
 	}
 
+	@Override
+	public List<String> listaserveramico() throws RemoteException {
+		return mytopic;
+	}
+
 	private synchronized void updatelist() throws RemoteException {
-		HashMap<String, String> l = amicoserver.listaserveramico();
-		l.forEach((k, v) -> {
-			if(!topic.containsKey(k)){
-				topic.put(k,v);
-				ListaTopic.put(k, new ArrayList<String>());
-			}
-		});
+		ereditati = amicoserver.listaserveramico();
 	}
 
     @Override
     public void ReqDisconnection() throws RemoteException {
-		amicoserver.SReqDisconnection(servername);
-		amicoserver=null;
-
-		topic.forEach((k, v) -> {
-			if (!v.equals(servername)) {
-				topic.remove(k);
-				List<String> s = ListaTopic.get(k);
-				for(int i = 0; i < s.size(); i++) {
-					try {
-						ListaClient.get(s.get(i)).RUSTopic(k);
-					} catch (RemoteException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		});
+		if(amicoserver != null) {
+			amicoserver.SReqDisconnection(servername);
+			amicoserver = null;
+		}
 	}
 
 	@Override
@@ -195,15 +170,8 @@ public class PCADBroker implements Forum {
 	}
 
 	@Override
-	public void clientPrint(String msg, String topic) throws RemoteException  {
+	public void clientPrint(String msg, String topic) throws RemoteException {
 		List<String> s = ListaTopic.get(topic);
-		for(int i=0; i<s.size();i++)
-			if(ListaClient.get(s.get(i)).listen_topic(topic))
-				ListaClient.get(s.get(i)).clientPrint(msg,topic);
-	}
-
-	@Override
-	public boolean listen_topic(String topic) throws RemoteException {
-		return true;
+		for (int i = 0; i < s.size(); i++) ListaClient.get(s.get(i)).clientPrint(msg, topic);
 	}
 }

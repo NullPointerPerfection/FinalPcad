@@ -111,14 +111,4 @@ public class Pub_Sub implements Client {
 	public void clientPrint(String msg, String topic) throws RemoteException {
 		System.out.println(topic+ ": " +msg);
 	}
-
-	@Override
-	public boolean listen_topic(String topic) throws RemoteException {
-		return topiclist.get(topic);
-	}
-
-	public void modify_listen(String topic, boolean t){
-		if(topiclist.containsKey(topic))
-			topiclist.replace(topic, t);
-	}
 }

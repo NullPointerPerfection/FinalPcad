@@ -14,7 +14,6 @@ public interface Client extends Remote {
 	public void RUSTopic(String topic) throws RemoteException;
 	public void Publish(String msg, String topic) throws RemoteException;
 	public void clientPrint(String msg, String topic) throws RemoteException;
-	public boolean listen_topic(String topic) throws RemoteException; //se sta ascoltando
 
 	/*
 	invio richiesta di connessione ad un broker
