@@ -3,46 +3,48 @@ package progetto;
 import java.net.UnknownHostException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class prova {
 	
 	private static int cont;
 	
-	private static HashMap<String, String> BigMom = new HashMap<>();
-	private static HashMap<String, String> BigMom2 = new HashMap<>();
+	private static List<String> BigMom = new ArrayList<>();
+	private static List<String> BigMom2 = new ArrayList<>();
 
-
-	public prova(String s, String v) {
-		BigMom.put(s, v);
-	}
 
 	public static void main(String[] args) throws RemoteException, NotBoundException, UnknownHostException {
 
-		prova p1 = new prova("a","server1");
+		//prova p1 = new prova("a","server1");
 		//System.out.println(p1.BigMom.keySet());
-		prova p2 = new prova("1","server1");
+		//prova p2 = new prova("1","server1");
 	//	System.out.println(p1.BigMom.keySet());
 		//System.out.println(p2.BigMom.keySet());
 
-		BigMom2.put("ccc", "server2");
-		BigMom2.put("aaa", "server2");
-		prova c = new prova("a","b");
+		BigMom2.add("ccc");
+		BigMom2.add("aaa");
+		//prova c = new prova("a","b");
 		//System.out.println(p1.BigMom.keySet());
-		prova b = new prova("1","2");
+		//prova b = new prova("1","2");
 
 		PCADBroker server = new PCADBroker("server1", BigMom, 2400);
 		PCADBroker server2 = new PCADBroker("server2", BigMom2, 2500, "server1", "localhost", 2400);
 
-		//Pub_Sub client = new Pub_Sub("simo", "localhost", "server1");
+       // PCADBroker server2 = new PCADBroker("server2", BigMom2, 2500, "server1", "localhost", 2400);
+       // PCADBroker server2 = new PCADBroker("server2", BigMom2, 2500, "server1", "localhost", 2400);
 
 
+        Pub_Sub client = new Pub_Sub("simo", "localhost", "server1", 1200,2400);
+		Pub_Sub client2 = new Pub_Sub("dany", "localhost", "server2", 1300,2500);
+		client.ReqConnection();
+        client.RSTopic("b");
 
-		//creo root (classe semplice[potrei farlo anche remoto e implementare i metodi di inserimento di topic nella lista, e la restituzione del nome del server in cui � salvato un topic]) mi dichiaro un thread pool di dimensione variabile minima di 5
-		//mi dichiaro una lista di topic/server
-		
-		//e se io dentro al client mi salvo il server root, da cui chiamo un metodo per sapere il nome del server che mi serve
-		//e poi faccio come gi� previsto
+        client2.ReqConnection();
+        client2.RSTopic("b");
+        client2.Publish("dany è entrato nel club, benvenuti a tutti", "b", "dany","dany");
+
 	}
 
 }

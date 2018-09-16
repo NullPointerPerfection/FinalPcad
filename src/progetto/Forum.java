@@ -7,13 +7,14 @@ import java.util.List;
 
 public interface Forum extends Client {
 	
-	public Integer SReqConnection(String user, String host, int portC) throws RemoteException, NotBoundException;
-	public void SReqDisconnection(String user) throws RemoteException;
-	public Integer SRSTopic(String user, String topic) throws RemoteException;
-	public Integer SRUSTopic(String user, String topic) throws RemoteException;
-	public Integer SPublish(String msg, String topic) throws RemoteException;
-	public List<String> listaserveramico() throws RemoteException;
+	Integer SReqConnection(String user, String host, int portC) throws RemoteException, NotBoundException;
+	void SReqDisconnection(String user) throws RemoteException;
+	Integer SRSTopic(String user, String topic) throws RemoteException;
+	Integer SRUSTopic(String user, String topic) throws RemoteException;
+	Integer SPublish(String msg, String topic, String user, String mittente) throws RemoteException;
+	List<String> listaserveramico() throws RemoteException;
 
+    public String myname() throws RemoteException;
 	//public void addToServerList(String servername, Forum stub) throws RemoteException;
 	//public boolean isOnline(String username) throws RemoteException;
 	//public void goOnline(String username, Client client) throws RemoteException;

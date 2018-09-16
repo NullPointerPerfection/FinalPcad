@@ -12,8 +12,8 @@ public interface Client extends Remote {
 	public void ReqDisconnection() throws RemoteException;
 	public void RSTopic(String topic) throws RemoteException;
 	public void RUSTopic(String topic) throws RemoteException;
-	public void Publish(String msg, String topic) throws RemoteException;
-	public void clientPrint(String msg, String topic) throws RemoteException;
+	public void Publish(String msg, String topic, String user, String mittente) throws RemoteException;
+	public void clientPrint(String msg, String topic, String user) throws RemoteException;
 
 	/*
 	invio richiesta di connessione ad un broker
