@@ -32,18 +32,19 @@ public class prova {
 		PCADBroker server = new PCADBroker("server1", BigMom, 2400);
 		PCADBroker server2 = new PCADBroker("server2", BigMom2, 2500, "server1", "localhost", 2400);
 
-       // PCADBroker server2 = new PCADBroker("server2", BigMom2, 2500, "server1", "localhost", 2400);
-       // PCADBroker server2 = new PCADBroker("server2", BigMom2, 2500, "server1", "localhost", 2400);
+       PCADBroker ser = new PCADBroker("ser", BigMom2, 2600, "server2", "localhost", 2500);
+       PCADBroker s = new PCADBroker("s", BigMom2, 2700, "ser", "localhost", 2600);
 
 
         Pub_Sub client = new Pub_Sub("simo", "localhost", "server1", 1200,2400);
-		Pub_Sub client2 = new Pub_Sub("dany", "localhost", "server2", 1300,2500);
+		Pub_Sub client2 = new Pub_Sub("dany", "localhost", "s", 1300,2700);
 		client.ReqConnection();
         client.RSTopic("b");
 
         client2.ReqConnection();
         client2.RSTopic("b");
         client2.Publish("dany è entrato nel club, benvenuti a tutti", "b", "dany","dany");
+
 
 	}
 

@@ -2,7 +2,6 @@ package progetto;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.util.HashMap;
 import java.util.List;
 
 public interface Forum extends Client {
@@ -14,15 +13,5 @@ public interface Forum extends Client {
 	Integer SPublish(String msg, String topic, String user, String mittente) throws RemoteException;
 	List<String> listaserveramico() throws RemoteException;
 
-    public String myname() throws RemoteException;
-	//public void addToServerList(String servername, Forum stub) throws RemoteException;
-	//public boolean isOnline(String username) throws RemoteException;
-	//public void goOnline(String username, Client client) throws RemoteException;
-	/*richiesta connessione di un client
-	richiesta disconnessione di un client
-	richiesta subscribe di un client su una topic
-	richiesta unsubscribe di un client su una topic
-	richiesta publish di un client su una topic con conseguente broadcast a tutti subscriber della topic
-	creazione topic*/
-	
+    String myname() throws RemoteException;
 }

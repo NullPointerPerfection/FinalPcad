@@ -10,22 +10,20 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 
 public class Pub_Sub implements Client {
-	
-	//private final static int portR = 1200;
-	//private final static int portS = 2400;
+
 	private int portC;
 	private Forum server;
 	private String username;
 
 	public Pub_Sub(String user, String hostS, String nameS, int portC, int portS) throws RemoteException, NotBoundException {
-		System.setProperty("java.security.policy","file:./sec.policy");
+		/*System.setProperty("java.security.policy","file:./sec.policy");
 		System.setProperty("java.rmi.server.codebase","file:${workspace_loc}/Client/");
 		if (System.getSecurityManager() == null) System.setSecurityManager(new SecurityManager());
-		System.setProperty("java.rmi.server.hostname","localhost");
+		System.setProperty("java.rmi.server.hostname","localhost");*/
 
 		this.username = user;
-		Client stub = (Client) UnicastRemoteObject.exportObject(this, 0);
-		this.portC=portC;
+        this.portC=portC;
+        Client stub = (Client) UnicastRemoteObject.exportObject(this, 0);
 		Registry r;
 		try {
 			r = LocateRegistry.createRegistry(portC);
@@ -39,10 +37,11 @@ public class Pub_Sub implements Client {
 		server = (Forum) registry.lookup(nameS);
 		System.out.println("fine costruttorec");
 	}
-
+//forse non serve
+    /*
 	public String myname(){
 		return username;
-	}
+	}*/
 
 	@Override
 	public void ReqConnection() throws RemoteException, UnknownHostException, NotBoundException {
