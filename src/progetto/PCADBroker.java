@@ -14,9 +14,9 @@ import java.util.List;
 
 public class PCADBroker implements Forum {
 
-	private int portS;//le porte sono così per i test (bisognerà fare in modo di passare la porta richiesta quando serve)
+	private int portS;
 	private String servername;
-	private Forum amicoserver; //    l'eventuale server a cui si iscrive
+	private Forum amicoserver; //l'eventuale server a cui si iscrive
 
 	private List<String> mytopic = new ArrayList<>();
 	private List<String> ereditati = new ArrayList<>();
@@ -133,11 +133,7 @@ public class PCADBroker implements Forum {
 			return 2;
 		}
 		return 1;
-	}//si riferisce al for sopra
-	/*for (int i = 0; i < ls.size(); i++){
-                    if(utentionline.contains(ls.get(i)))
-                        if(!ls.get(i).equals(mittente)) ListaClient.get(ls.get(i)).clientPrint(msg, topic, mittente);
-                }*/
+	}
 
     @Override
 	public void ReqConnection() throws RemoteException, UnknownHostException, NotBoundException {
@@ -166,7 +162,6 @@ public class PCADBroker implements Forum {
             if (!mytopic.contains(s))
                 mytopic.add(s);
         }
-
 	}
 
     @Override
@@ -192,8 +187,6 @@ public class PCADBroker implements Forum {
 	@Override
 	public void Publish(String msg, String topic, String user, String mittente) throws RemoteException {
 		amicoserver.SPublish(msg, topic, user, mittente);
-		// in teoria se lho pensata bene il serveramico userà la clientprint(del nostro server) per inviare la notifica...
-		// a quel punto nella nostra clientprint faremo in modo di chiamarla su tutti i nostri client iscritti
 	}
 
 	@Override
