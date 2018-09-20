@@ -13,5 +13,8 @@ public interface Forum extends Client {
 	Integer SPublish(String msg, String topic, String user, String mittente) throws RemoteException;
 	List<String> listaserveramico() throws RemoteException;
 
-    String myname() throws RemoteException;
+	void Publish(String msg, String topic, String user, String mittente) throws RemoteException;
+
+
+		String myname() throws RemoteException;
 }

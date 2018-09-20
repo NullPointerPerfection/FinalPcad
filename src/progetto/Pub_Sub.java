@@ -31,11 +31,11 @@ public class Pub_Sub implements Client {
 			r = LocateRegistry.getRegistry(portC);
 		}
 		r.rebind(this.username, stub);
-		System.out.println("si � creato il client");
+		System.out.println("si � creato il client "+username);
 
 		Registry registry = LocateRegistry.getRegistry(hostS, portS); //trova il registro
 		server = (Forum) registry.lookup(nameS);
-		System.out.println("fine costruttorec");
+		//System.out.println("fine costruttorec");
 	}
 //forse non serve
     /*
@@ -49,7 +49,6 @@ public class Pub_Sub implements Client {
 		try {
 			while (response == 1) {
 				response = server.SReqConnection(username, InetAddress.getLocalHost().getHostAddress(), portC);
-				System.out.println(response);
 				switch (response) {
 					case (0):
 						System.out.println("Connection between " + username + " and " + server.myname() + ": DONE.");
@@ -74,7 +73,6 @@ public class Pub_Sub implements Client {
 	@Override
 	public void ReqDisconnection() throws RemoteException {
 		this.server.SReqDisconnection(username);
-		System.exit(0);
 	}
 
 	@Override
@@ -84,7 +82,10 @@ public class Pub_Sub implements Client {
 			System.out.println("Iscrizione di " + username + " al topic " + topic);
 			return;
 		} else if (a == 1) {
-			System.err.println("Iscrizione di " + username + " al topic " + topic + "non riuscita");
+			System.err.println("Iscrizione di " + username + " al topic " + topic + " non riuscita");
+			return;
+		} else if(a==2) {
+			System.out.println("Creazione ed iscrizione di " + username + " al topic " + topic);
 			return;
 		}
 		System.err.println("--UNEXPECTED ERROR IN RSTOPIC--");
@@ -97,18 +98,18 @@ public class Pub_Sub implements Client {
 			System.out.println("Disiscrizione di " + username + " al topic " + topic);
 			return;
 		} else if (a == 1) {
-			System.err.println("Disiscrizione di " + username + " al topic " + topic + "non riuscita: non era iscritto.");
+			System.err.println("Disiscrizione di " + username + " al topic " + topic + " non riuscita: non era iscritto.");
 			return;
 		}
 		System.err.println("--UNEXPECTED ERROR IN RUSTOPIC--");
 	}
 
 	@Override
-	public void Publish(String msg, String topic, String user, String mittente) throws RemoteException {
+	public void Publish(String msg, String topic) throws RemoteException {
 		int a = server.SPublish(msg, topic, username, username);
 		if (a == 0) return;
 		else if (a == 1) {
-			System.err.println(username + ", non puoi pubblicare sul topic " + topic + "non essendo iscritto.");
+			System.err.println(username + ", non puoi pubblicare sul topic " + topic + " non essendo iscritto.");
 			return;
 		}
 		else if ( a == 2) {

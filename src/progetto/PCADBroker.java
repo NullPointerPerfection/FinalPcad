@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-
 public class PCADBroker implements Forum {
 
 	private int portS;
@@ -25,14 +24,13 @@ public class PCADBroker implements Forum {
     private HashMap<String, List<String>> ListaTopic = new HashMap<>(); //topic, lista utenti
     private HashMap<String, Client> ListaClient = new HashMap<>(); //nomeUtente, oggetto
 
-
 	public PCADBroker(String servername, List<String> t, int port) throws RemoteException {
 	/*	System.setProperty("java.security.policy","file:./sec.policy");
 		System.setProperty("java.rmi.server.codebase","file:${workspace_loc}/Server/");
 		if(System.getSecurityManager() == null) System.setSecurityManager(new SecurityManager());
 		System.setProperty("java.rmi.server.hostname","localhost");*/
 
-		System.out.println("inizio costuttore server roba");
+		//System.out.println("inizio costuttore server roba");
 		this.servername = servername;
         portS=port;
         mytopic=t;
@@ -46,7 +44,7 @@ public class PCADBroker implements Forum {
 		}
 		r.rebind(this.servername, stub);
 		for(int i=0; i <mytopic.size(); i++) ListaTopic.put(mytopic.get(i), new ArrayList<>());
-		System.out.println("si � creato il server");
+		System.out.println("si � creato il server "+servername);
 	}
 
 	public PCADBroker(String servername, List<String> t, int port, String nomeamico, String hostamico, int portA) throws RemoteException, NotBoundException, UnknownHostException {
@@ -65,13 +63,13 @@ public class PCADBroker implements Forum {
 	public Integer SReqConnection(String user, String host, int portC) throws RemoteException, NotBoundException {
         Registry registry = LocateRegistry.getRegistry(host, portC); //trova il registro
         Client stub = (Client) registry.lookup(user);
-        System.out.println("il server sta cercando di collegare utente");
+       // System.out.println("il server sta cercando di collegare utente");
 			synchronized (this) {
 				if (utentionline.contains(user)) return 1;
 				if (!ListaClient.containsKey(user)) ListaClient.put(user, stub);
 				utentionline.add(user);
 			}
-		System.out.println("guarda un po ce lha fatta");
+		//System.out.println("guarda un po ce lha fatta");
 		return 0;
 	}
 
@@ -86,19 +84,21 @@ public class PCADBroker implements Forum {
 		if(amicoserver != null) updatelist();
 		if(ListaClient.containsKey(user)){ //se client iscritto
 			synchronized (this) {
-                if(ereditati.contains(topic)){ //quest'ultimo pezzo è ancora da decidere come gestire la concorrenza (secondo me mettere l'intero metodo syn non è performante)
-                    RSTopic(topic);//il server si iscrive al topic dell serveramico
-                    ListaTopic.get(topic).add(user);
-                    return 0;
+                if(ereditati.contains(topic)){
+                	if(ListaTopic.get(topic).contains(user)) return 1; //quest'ultimo pezzo è ancora da decidere come gestire la concorrenza (secondo me mettere l'intero metodo syn non è performante)
+					RSTopic(topic);//il server si iscrive al topic dell serveramico
+					ListaTopic.get(topic).add(user);
+					return 0;
 				} else if (mytopic.contains(topic)) {//se è proprio
-                    ListaTopic.get(topic).add(user); //iscrivilo
-                    return 0;
+                    if(ListaTopic.get(topic).contains(user)) return 1;
+					ListaTopic.get(topic).add(user); //iscrivilo
+					return 0;
 				} //se non c'è il topic crealo
 				mytopic.add(topic);//iscrivi il client
 				List<String> l = new ArrayList<>();
 				l.add(user);
 				ListaTopic.put(topic, l);
-				return 0;
+				return 2;
 			}
 		}
 		return 1;
@@ -118,20 +118,22 @@ public class PCADBroker implements Forum {
 
 	@Override
 	public Integer SPublish(String msg, String topic, String user, String mittente) throws RemoteException {
-		if(ListaTopic.get(topic).contains(user)) {
-			if (ereditati.contains(topic)) {
-                Publish(msg, topic, servername, mittente);
-                return 0;
-			} else if (mytopic.contains(topic)) {
-                List<String> ls = ListaTopic.get(topic); //lista utenti iscritti
-                for (String l : ls) {
-                    if (utentionline.contains(l))
-                        if (!l.equals(mittente)) ListaClient.get(l).clientPrint(msg, topic, mittente);
-                }
-                return 0;
-            }
-			return 2;
-		}
+		//if(ListaTopic.containsKey(topic)) {
+			if (ListaTopic.containsKey(topic) && ListaTopic.get(topic).contains(user)) {
+				if (ereditati.contains(topic)) {
+					Publish(msg, topic, servername, mittente);
+					return 0;
+				} else if (mytopic.contains(topic)) {
+					List<String> ls = ListaTopic.get(topic); //lista utenti iscritti
+					for (String l : ls) {
+						if (utentionline.contains(l))
+							if (!l.equals(mittente)) ListaClient.get(l).clientPrint(msg, topic, mittente);
+					}
+					return 0;
+				}
+				return 2;
+			}
+		//}
 		return 1;
 	}
 
@@ -185,6 +187,12 @@ public class PCADBroker implements Forum {
 	}
 
 	@Override
+	public void Publish(String msg, String topic) throws RemoteException {
+		//questo metodo è obsoleto;
+		//il server usa una versione leggermente diversa
+	}
+
+	@Override
 	public void Publish(String msg, String topic, String user, String mittente) throws RemoteException {
 		amicoserver.SPublish(msg, topic, user, mittente);
 	}
@@ -193,6 +201,7 @@ public class PCADBroker implements Forum {
 	public void clientPrint(String msg, String topic, String user) throws RemoteException {
 		List<String> s = ListaTopic.get(topic);
         for (String value : s) {
+        	if(utentionline.contains(value))
             if (!value.equals(user)) ListaClient.get(value).clientPrint(msg, topic, user);
         }
 	}
