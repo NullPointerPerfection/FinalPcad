@@ -4,8 +4,14 @@ import java.net.UnknownHostException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class prova {
 	
@@ -20,33 +26,21 @@ public class prova {
 
 	public static void main(String[] args) throws RemoteException, NotBoundException, UnknownHostException {
 
-		//prova p1 = new prova("a","server1");
-		//System.out.println(p1.BigMom.keySet());
-		//prova p2 = new prova("1","server1");
-	//	System.out.println(p1.BigMom.keySet());
-		//System.out.println(p2.BigMom.keySet());
-
-		//BigMom2.add("ccc");
-		//BigMom2.add("aaa");
-		//prova c = new prova("a","b");
-		//System.out.println(p1.BigMom.keySet());
-		//prova b = new prova("1","2");
-
-/*		PCADBroker server = new PCADBroker("server1", BigMom, 2400);
-		PCADBroker server2 = new PCADBroker("server2", BigMom2, 2500, "server1", "localhost", 2400);
-
-       PCADBroker ser = new PCADBroker("ser", BigMom2, 2600, "server2", "localhost", 2500);
-       PCADBroker s = new PCADBroker("s", BigMom2, 2700, "ser", "localhost", 2600);
+		Troot = Stream.of("cucina", "calcio", "giochi", "manga").collect(Collectors.toList());
+		Ta = Stream.of("cucito", "ballo", "anime", "pc").collect(Collectors.toList());
+		Tb = Stream.of("basket").collect(Collectors.toList());
+		Tc = Stream.of("tennis").collect(Collectors.toList());
+		Tz = Stream.of("serietv").collect(Collectors.toList());
 
 
-        Pub_Sub client = new Pub_Sub("simo", "localhost", "server1", 1200,2400);
-		Pub_Sub client2 = new Pub_Sub("dany", "localhost", "s", 1300,2700);
-		client.ReqConnection();
-        client.RSTopic("b");
+/*		int n = 5; //chiedere in input quanti client si vogliono
+		ExecutorService executor = Executors.newFixedThreadPool(n);
+		for(int i=0;i<n;i++)
+			executor.submit(new mythread());//il costruttore è vuoto bisogna passargli tutta la roba prima di provarlo
 
-        client2.ReqConnection();
-        client2.RSTopic("b");
-        client2.Publish("dany è entrato nel club, benvenuti a tutti", "b", "dany","dany");*/
+		executor.shutdown();*/
+
+/*
 		Troot.add("cucina");
 		Troot.add("calcio");
 		Troot.add("giochi");
@@ -57,9 +51,9 @@ public class prova {
 		Ta.add("anime");
 		Ta.add("pc");
 		Tb.add("basket");
-		Tc.add("tennis");
+		Tc.add("tennis");*/
 
-
+/*
 
 		PCADBroker root = new PCADBroker("root", Troot, 2400);
 		PCADBroker a= new PCADBroker("a", Ta, 2500, "root", "localhost", 2400);
@@ -187,7 +181,7 @@ public class prova {
 */
 
 
-		//client2.Publish("dany è entrato nel club, benvenuti a tutti", "b", "dany","dany");
+		//client2.Publish("dany è entrato nel club, benvenuti a tutti", "b", "dany","dany");*/
 
 
 	}
